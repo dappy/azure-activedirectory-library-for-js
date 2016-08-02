@@ -858,12 +858,12 @@ describe('Adal', function () {
         adal.popUp = true;
         adal.config.clientId = 'client';
         adal.config.redirectUri = 'contoso_site';
-        spyOn(adal, 'loginPopup');
+        spyOn(adal, '_loginPopup');
         mathMock.random = function () {
             return 0.2;
         };
         adal.login();
-        expect(adal.loginPopup).toHaveBeenCalledWith(DEFAULT_INSTANCE + conf.tenant + '/oauth2/authorize?response_type=id_token&client_id=client&redirect_uri=contoso_site&state=33333333-3333-4333-b333-333333333333'
+        expect(adal._loginPopup).toHaveBeenCalledWith(DEFAULT_INSTANCE + conf.tenant + '/oauth2/authorize?response_type=id_token&client_id=client&redirect_uri=contoso_site&state=33333333-3333-4333-b333-333333333333'
             + '&client-request-id=33333333-3333-4333-b333-333333333333' + adal._addLibMetadata() + '&nonce=33333333-3333-4333-b333-333333333333');
         expect(adal.config.state).toBe('33333333-3333-4333-b333-333333333333');
     });
