@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, ConnectionBackend, RequestOptions, RequestOptionsArgs, Response, HTTP_PROVIDERS, XHRBackend } from '@angular/http';
+import { Http, ConnectionBackend, Request, RequestOptions, RequestOptionsArgs, Response, HTTP_PROVIDERS, XHRBackend, Headers } from '@angular/http';
 import { Observable } from 'rxjs/RX';
 
 'use strict';
@@ -41,17 +41,38 @@ export class AdalHttp extends Http {
         super(backend, defaultOptions);
     }
 
-    protected mergeOptions(url: string, options?: RequestOptionsArgs): Observable<RequestOptionsArgs> {
+    protected mergeOptions(url: string | Request, options?: RequestOptionsArgs): Observable<RequestOptionsArgs> {
         return Observable.create(observer => {
-            this.adal.acquireToken(url)
+
+            let resourceUrl = (url instanceof Request) ? url.url : url;
+
+            this.adal.acquireToken(resourceUrl)
                 .subscribe(token => {
+                    console.log(url);
+                    console.log(token);
                     let newOptions = options || new RequestOptions();
-                    newOptions.headers.append('Authorization', `Bearer ${token}`);
+                    if (!newOptions.headers) {
+                        newOptions.headers = new Headers();
+                    }
+                    newOptions.headers.set('Authorization', `Bearer ${token}`);
                     observer.next(newOptions);
                 }, error => {
                     observer.error(error);
                 });
         });
+    }
+
+      /**
+   * Performs any type of http request. First argument is required, and can either be a url or
+   * a {@link Request} instance. If the first argument is a url, an optional {@link RequestOptions}
+   * object can be provided as the 2nd argument. The options object will be merged with the values
+   * of {@link BaseRequestOptions} before performing the request.
+   */
+    request(url: string | Request, options?: RequestOptionsArgs): Observable<Response> {
+        return this.mergeOptions(url, options)
+            .flatMap<Response>(requestOptions => {
+                return super.request(url, options);
+            });
     }
 
     /**
@@ -163,6 +184,12 @@ export const AUTH_PROVIDERS: any[] = [
     ...HTTP_PROVIDERS,
     { provide: AdalAuthenticationService, useFactory: () => new AdalAuthenticationService(authConfig) },
     { provide: Http, useFactory: (connectionBackend: XHRBackend, defaultOptions: RequestOptions, authService: AdalAuthenticationService) => {
+        let jsonOptions = defaultOptions || new RequestOptions();
+        if (!jsonOptions.headers) {
+            jsonOptions.headers = new Headers();
+        }
+        jsonOptions.headers.set('Content-Type', 'application/json');
+        jsonOptions.headers.set('Accept', 'application/json');
         return new AdalHttp(connectionBackend, defaultOptions, authService);
     }, deps: [XHRBackend, RequestOptions, AdalAuthenticationService] } 
 ];
