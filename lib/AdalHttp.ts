@@ -48,8 +48,6 @@ export class AdalHttp extends Http {
 
             this.adal.acquireToken(resourceUrl)
                 .subscribe(token => {
-                    console.log(url);
-                    console.log(token);
                     let newOptions = options || new RequestOptions();
                     if (!newOptions.headers) {
                         newOptions.headers = new Headers();
