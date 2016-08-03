@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
-import { Http, ConnectionBackend, RequestOptions, RequestOptionsArgs, Request, Response, HTTP_PROVIDERS, XHRBackend } from '@angular/http';
+import { Http, ConnectionBackend, RequestOptions, RequestOptionsArgs, Response, HTTP_PROVIDERS, XHRBackend } from '@angular/http';
 import { Observable } from 'rxjs/RX';
 
 'use strict';
-declare var authContext;
-declare var authConfig;
+
+declare var authConfig: AdalConfig;
+
 export interface AdalUser {
     userName: string;
     profile: any;
 }
+
 export declare class AuthenticationContext {
     _renewActive: boolean;
     constructor(config: AdalConfig);
